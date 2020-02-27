@@ -1,21 +1,29 @@
 local game = { }
-local board = {
-    { '', '', '' },
-    { '', '', '' },
-    { '', '', '' }
-}
+local board = {}
+function SetUpGrid()
+    board = {
+        { '', '', '' },
+        { '', '', '' },
+        { '', '', '' }
+    }
+end
 
 local players = { 'X', 'O' }
-local title = {}
+local title, gameover = {}, {}
 local available = {}
 local currentPlayer
 local width, height
 
 function game.load(game)
+    SetUpGrid()
 
     title.font = game.fonts[1]
     title.text = "Tic-Tac-Toe"
     title.color = { 0 / 255, 100 / 255, 0 / 255, 1 }
+
+    gameover.font = game.fonts[1]
+    gameover.text = "%player% won the game"
+    gameover.color = { 0 / 255, 100 / 255, 0 / 255, 1 }
 
     width, height = love.graphics.getDimensions()
     currentPlayer = players[math.random(#players)]
@@ -27,7 +35,7 @@ function game.load(game)
 end
 
 function game.draw(dt)
-    printTitle()
+    --printTitle()
 
     local w = width / 3
     local h = height / 3
@@ -57,11 +65,16 @@ function game.draw(dt)
     end
     local result = checkWinner();
     if (result ~= nil) then
+
         if (result == 'tie') then
-            print("TIE")
+            gameover.text = "TIE"
         else
-            print(result)
+            gameover.text = string.gsub(gameover.text, "%%player%%", result)
         end
+        love.graphics.setColor(unpack(gameover.color))
+        local strWidth = gameover.font:getWidth(gameover.text)
+        local t = centerText(gameover, strWidth, gameover.font)
+        love.graphics.print(gameover.text, t.w, t.h - 250, 0, 1, 1, t.strW, t.fontH)
     else
         nextTurn();
     end
@@ -131,6 +144,14 @@ end
 function game.keypressed(key)
     if (key == 'escape') then
         love.event.push('quit')
+    elseif (key == "r") then
+        SetUpGrid()
+        currentPlayer = "X"
+        for j = 1, 3 do
+            for i = 1, 3 do
+                available[#available + 1] = { i, j }
+            end
+        end
     end
 end
 
