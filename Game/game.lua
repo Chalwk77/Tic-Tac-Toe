@@ -1,5 +1,12 @@
-local game = { }
-local board = {}
+local game, board = { }, { }
+local players = { 'X', 'O' }
+local title, gameover, available = { }, { }, { }
+
+local currentPlayer
+local width, height
+local reset_key = "r"
+local trans, shakeDuration, shakeMagnitude = 0, -1, 0
+
 function SetUpGrid()
     board = {
         { '', '', '' },
@@ -7,14 +14,6 @@ function SetUpGrid()
         { '', '', '' }
     }
 end
-
-local players = { 'X', 'O' }
-local title, gameover, available = { }, { }, { }
-local currentPlayer
-local width, height
-local reset_key = "r"
-
-local trans, shakeDuration, shakeMagnitude = 0, -1, 0
 
 function game.load(game)
     SetUpGrid()
@@ -59,7 +58,7 @@ function game.draw(dt)
 
     local w = width / 3
     local h = height / 3
-    love.graphics.setLineWidth(1)
+    love.graphics.setLineWidth(5)
     love.graphics.setColor(255 / 255, 50 / 255, 0 / 255, 1)
     love.graphics.line(w, 0, w, height);
     love.graphics.line(w * 2, 0, w * 2, height);
@@ -74,17 +73,19 @@ function game.draw(dt)
             local y = h * j + (h / 2 - 260)
             local spot = board[i][j]
             if (spot == players[1]) then
+                love.graphics.setLineWidth(7)
                 love.graphics.setColor(34 / 255, 139 / 255, 34 / 255, 1)
                 love.graphics.line(x - xr, y - xr, x + xr, y + xr)
                 love.graphics.line(x + xr, y - xr, x - xr, y + xr)
             elseif (spot == players[2]) then
+                love.graphics.setLineWidth(7)
                 love.graphics.setColor(0 / 255, 191 / 255, 255 / 255, 1)
                 love.graphics.circle('line', x, y, xr)
             end
         end
     end
 
-    local result = checkWinner();
+    local result = checkWinner()
     if (result ~= nil) then
         local txt = ""
 
