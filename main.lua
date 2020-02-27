@@ -15,17 +15,8 @@ local function loadingFinished()
 end
 
 function love.load()
-
     local cursor = love.mouse.newCursor("Media/Images/cursor.png")
     love.mouse.setCursor(cursor)
-
-    -- Detect native desktop resolution and set window mode to fullscreen:
-    --local ww, wh = love.window.getDesktopDimensions()
-    --love.window.setMode(ww, wh, {
-    --    fullscreen = true,
-    --    vsync = true,
-    --    centered = true
-    --})
 
     currentState = loadingState
     currentState.load(game, loadingFinished)

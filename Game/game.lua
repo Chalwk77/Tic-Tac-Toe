@@ -50,8 +50,10 @@ function game.draw(dt)
         for i = 1, #board[j] do
 
             local xr = w / 4
-            local x = w * i + w / 2 - 360
-            local y = h * j + h / 2 - 260
+            local xOff, yOff = 360, 260
+            local x = w * i + (w / 2 - xOff)
+            local y = h * j + (h / 2 - yOff)
+
             local spot = board[i][j]
             if (spot == players[1]) then
                 love.graphics.setColor(34 / 255, 139 / 255, 34 / 255, 1)
@@ -75,8 +77,6 @@ function game.draw(dt)
         local strWidth = gameover.font:getWidth(gameover.text)
         local t = centerText(gameover, strWidth, gameover.font)
         love.graphics.print(gameover.text, t.w, t.h - 250, 0, 1, 1, t.strW, t.fontH)
-    else
-        nextTurn();
     end
 end
 
@@ -120,37 +120,41 @@ function checkWinner()
     end
 end
 
-function nextTurn()
-    local num = math.random(#available)
-    local spot = available[num]
-    while (spot ~= "filled") do
-        local i = spot[1]
-        local j = spot[2]
-        board[i][j] = currentPlayer
-        if currentPlayer == "X" then
-            currentPlayer = "O"
-        else
-            currentPlayer = "X"
-        end
-        available[num] = "filled"
-        break
-    end
-end
-
 function love.mousepressed(x, y, button, isTouch)
-    nextTurn()
+    local mx, my = love.mouse.getPosition()
+    local w, h = width / 3, height / 3
+    for j = 1, #board do
+        for i = 1, #board[j] do
+            local x = w * i + (w / 2 - 360)
+            local y = h * j + (h / 2 - 260)
+            if intersecting(mx, my, x, y, 50) then
+                if (board[i][j] ~= players[1]) and (board[i][j] ~= players[2]) then
+                    board[i][j] = currentPlayer
+                    if currentPlayer == "X" then
+                        currentPlayer = "O"
+                    else
+                        currentPlayer = "X"
+                    end
+                end
+            end
+        end
+    end
 end
 
 function game.keypressed(key)
     if (key == 'escape') then
         love.event.push('quit')
     elseif (key == "r") then
-        SetUpGrid()
-        currentPlayer = "X"
-        for j = 1, 3 do
-            for i = 1, 3 do
-                available[#available + 1] = { i, j }
-            end
+        Reset()
+    end
+end
+
+function Reset()
+    SetUpGrid()
+    currentPlayer = "X"
+    for j = 1, 3 do
+        for i = 1, 3 do
+            available[#available + 1] = { i, j }
         end
     end
 end
@@ -170,6 +174,15 @@ function centerText(str, strW, font)
         strW = math.floor(strW / 2),
         fontH = math.floor(font:getHeight() / 2),
     }
+end
+
+function intersecting(x1, y1, x2, y2, r)
+    local x, y = (x1 - x2), (y1 - y2)
+    local dist = math.sqrt(x ^ 2 + y ^ 2)
+    if (dist <= r) then
+        return true
+    end
+    return false
 end
 
 return game
