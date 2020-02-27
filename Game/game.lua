@@ -26,7 +26,10 @@ function game.load(game)
     gameover.text = "%player% won the game"
     gameover.color = { 0 / 255, 100 / 255, 0 / 255, 1 }
 
-    error_sound = love.audio.newSource(game.sounds.error)
+    click_sound = love.audio.newSource(game.sounds.click)
+    click_sound:setVolume(.5)
+
+    error_sound = love.audio.newSource(game.sounds.click)
     error_sound:setVolume(.5)
 
     width, height = love.graphics.getDimensions()
@@ -153,6 +156,7 @@ function love.mousepressed(x, y, button, isTouch)
             if intersecting(mx, my, x, y, 120) then
                 if (board[i][j] ~= players[1]) and (board[i][j] ~= players[2]) then
                     board[i][j] = currentPlayer
+                    click_sound:play()
 
                     for k = 1, #available do
                         if (available[k] ~= {}) then

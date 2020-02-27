@@ -18,8 +18,7 @@ function loadingState.load(game, finishCallback)
 
     ------------------- Preload Audio Files:
     loader.newSoundData(game.sounds, 'error', 'Media/Sounds/error.wav')
-    loader.newSoundData(game.sounds, 'button_click', 'Media/Sounds/button_click.mp3')
-    loader.newSoundData(game.sounds, 'on_hover', 'Media/Sounds/hover.wav')
+    loader.newSoundData(game.sounds, 'click', 'Media/Sounds/click.mp3')
 
     ------------------- Preload Fonts:
     -- Menu Title:
