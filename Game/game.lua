@@ -12,6 +12,7 @@ local players = { 'X', 'O' }
 local title, gameover, available = { }, { }, { }
 local currentPlayer
 local width, height
+local reset_key = "r"
 
 local trans, shakeDuration, shakeMagnitude = 0, -1, 0
 
@@ -23,13 +24,16 @@ function game.load(game)
     title.color = { 0 / 255, 100 / 255, 0 / 255, 1 }
 
     gameover.font = game.fonts[1]
-    gameover.text = "%player% won the game"
+    gameover.text = {
+        [1] = "%player% won the game",
+        [2] = "TIE"
+    }
     gameover.color = { 0 / 255, 100 / 255, 0 / 255, 1 }
 
     click_sound = love.audio.newSource(game.sounds.click)
     click_sound:setVolume(.5)
 
-    error_sound = love.audio.newSource(game.sounds.click)
+    error_sound = love.audio.newSource(game.sounds.error)
     error_sound:setVolume(.5)
 
     width, height = love.graphics.getDimensions()
@@ -66,9 +70,8 @@ function game.draw(dt)
         for i = 1, #board[j] do
 
             local xr = w / 4
-            local xOff, yOff = 360, 260
-            local x = w * i + (w / 2 - xOff)
-            local y = h * j + (h / 2 - yOff)
+            local x = w * i + (w / 2 - 360)
+            local y = h * j + (h / 2 - 260)
             local spot = board[i][j]
             if (spot == players[1]) then
                 love.graphics.setColor(34 / 255, 139 / 255, 34 / 255, 1)
@@ -83,16 +86,19 @@ function game.draw(dt)
 
     local result = checkWinner();
     if (result ~= nil) then
+        local txt = ""
 
         if (result == 'tie') then
-            gameover.text = "TIE"
+            txt = gameover.text[2]
         else
-            gameover.text = string.gsub(gameover.text, "%%player%%", result)
+            txt = string.gsub(gameover.text[1], "%%player%%", result)
         end
+
         love.graphics.setColor(unpack(gameover.color))
-        local strWidth = gameover.font:getWidth(gameover.text)
-        local t = centerText(gameover, strWidth, gameover.font)
-        love.graphics.print(gameover.text, t.w, t.h - 250, 0, 1, 1, t.strW, t.fontH)
+        local strWidth = gameover.font:getWidth(txt)
+        local t = centerText(strWidth, gameover.font)
+        love.graphics.print(txt, t.w, t.h - 140, 0, 1, 1, t.strW, t.fontH)
+        love.graphics.print("Press '" .. reset_key .. "' key to restart", t.w, t.h - 120, 0, 1, 1, t.strW, t.fontH)
     end
 end
 
@@ -157,7 +163,6 @@ function love.mousepressed(x, y, button, isTouch)
                 if (board[i][j] ~= players[1]) and (board[i][j] ~= players[2]) then
                     board[i][j] = currentPlayer
                     click_sound:play()
-
                     for k = 1, #available do
                         if (available[k] ~= {}) then
                             if available[k][1] == j and available[k][2] == i then
@@ -165,7 +170,6 @@ function love.mousepressed(x, y, button, isTouch)
                             end
                         end
                     end
-
                     if currentPlayer == "X" then
                         currentPlayer = "O"
                     else
@@ -203,11 +207,11 @@ function printTitle()
     love.graphics.setFont(title.font)
     love.graphics.setColor(unpack(title.color))
     local strWidth = title.font:getWidth(title.text)
-    local t = centerText(title, strWidth, title.font)
+    local t = centerText(strWidth, title.font)
     love.graphics.print(title.text, t.w, t.h - 290, 0, 1, 1, t.strW, t.fontH)
 end
 
-function centerText(str, strW, font)
+function centerText(strW, font)
     return {
         w = width / 2,
         h = height / 2,

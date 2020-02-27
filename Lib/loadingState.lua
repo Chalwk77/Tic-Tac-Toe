@@ -22,7 +22,7 @@ function loadingState.load(game, finishCallback)
 
     ------------------- Preload Fonts:
     -- Menu Title:
-    loader.newFont(game.fonts, 1, 'Assets/Fonts/arial.ttf', 34)
+    loader.newFont(game.fonts, 1, 'Assets/Fonts/arial.ttf', 120)
     loader.load(finishCallback, print)
 end
 
