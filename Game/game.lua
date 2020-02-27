@@ -9,10 +9,11 @@ function SetUpGrid()
 end
 
 local players = { 'X', 'O' }
-local title, gameover = {}, {}
-local available = {}
+local title, gameover, available = { }, { }, { }
 local currentPlayer
 local width, height
+
+local trans, shakeDuration, shakeMagnitude = 0, -1, 0
 
 function game.load(game)
     SetUpGrid()
@@ -25,10 +26,14 @@ function game.load(game)
     gameover.text = "%player% won the game"
     gameover.color = { 0 / 255, 100 / 255, 0 / 255, 1 }
 
+    error_sound = love.audio.newSource(game.sounds.error)
+    error_sound:setVolume(.5)
+
     width, height = love.graphics.getDimensions()
+    math.randomseed(os.clock())
     currentPlayer = players[math.random(#players)]
-    for j = 1, 3 do
-        for i = 1, 3 do
+    for j = 1, #board do
+        for i = 1, #board[j] do
             available[#available + 1] = { i, j }
         end
     end
@@ -36,6 +41,14 @@ end
 
 function game.draw(dt)
     --printTitle()
+
+    -- Screen Shake Animation:
+    if (trans < shakeDuration) then
+        math.randomseed(os.clock())
+        local dx = math.random(-shakeMagnitude, shakeMagnitude)
+        local dy = math.random(-shakeMagnitude, shakeMagnitude)
+        love.graphics.translate(dx, dy)
+    end
 
     local w = width / 3
     local h = height / 3
@@ -53,7 +66,6 @@ function game.draw(dt)
             local xOff, yOff = 360, 260
             local x = w * i + (w / 2 - xOff)
             local y = h * j + (h / 2 - yOff)
-
             local spot = board[i][j]
             if (spot == players[1]) then
                 love.graphics.setColor(34 / 255, 139 / 255, 34 / 255, 1)
@@ -65,6 +77,7 @@ function game.draw(dt)
             end
         end
     end
+
     local result = checkWinner();
     if (result ~= nil) then
 
@@ -81,7 +94,10 @@ function game.draw(dt)
 end
 
 function game.update(dt)
-
+    -- Screen Shake Animation:
+    if (trans < shakeDuration) then
+        trans = trans + dt
+    end
 end
 
 function equals3(a, b, c)
@@ -105,7 +121,7 @@ function checkWinner()
         end
     end
 
-    -- Diagonal
+    -- diagonal
     if (equals3(board[1][1], board[2][2], board[3][3])) then
         winner = board[1][1]
     end
@@ -113,7 +129,14 @@ function checkWinner()
         winner = board[3][1]
     end
 
-    if (winner == nil and #available == 0) then
+    local picked = 0
+    for _, index in pairs(available) do
+        if (index == "picked") then
+            picked = picked + 1
+        end
+    end
+
+    if (winner == nil and picked == #available) then
         return 'tie'
     else
         return winner
@@ -127,14 +150,25 @@ function love.mousepressed(x, y, button, isTouch)
         for i = 1, #board[j] do
             local x = w * i + (w / 2 - 360)
             local y = h * j + (h / 2 - 260)
-            if intersecting(mx, my, x, y, 50) then
+            if intersecting(mx, my, x, y, 120) then
                 if (board[i][j] ~= players[1]) and (board[i][j] ~= players[2]) then
                     board[i][j] = currentPlayer
+
+                    for k = 1, #available do
+                        if (available[k] ~= {}) then
+                            if available[k][1] == j and available[k][2] == i then
+                                available[k] = "picked"
+                            end
+                        end
+                    end
+
                     if currentPlayer == "X" then
                         currentPlayer = "O"
                     else
                         currentPlayer = "X"
                     end
+                else
+                    cameraShake(0.6, 2.5)
                 end
             end
         end
@@ -151,10 +185,12 @@ end
 
 function Reset()
     SetUpGrid()
-    currentPlayer = "X"
+    math.randomseed(os.clock())
+    currentPlayer = players[math.random(#players)]
+    available = {}
     for j = 1, 3 do
         for i = 1, 3 do
-            available[#available + 1] = { i, j }
+            available[#available + 1] = { j, i }
         end
     end
 end
@@ -183,6 +219,11 @@ function intersecting(x1, y1, x2, y2, r)
         return true
     end
     return false
+end
+
+function cameraShake(duration, magnitude)
+    error_sound:play()
+    trans, shakeDuration, shakeMagnitude = 0, duration or 1, magnitude or 5
 end
 
 return game
